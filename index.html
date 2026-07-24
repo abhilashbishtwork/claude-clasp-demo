@@ -123,6 +123,8 @@ h1.headline{
 .line.ok{ color:var(--mint); }
 .line.prompt::before{ content:"$ "; color:var(--mint); font-weight:700; }
 .line.reply::before{ content:"> "; color:#64748b; }
+.line.fade-in{ opacity:0; transform:translateY(5px); transition:opacity .3s ease, transform .3s ease; }
+.line.fade-in.shown{ opacity:1; transform:translateY(0); }
 
 /* ---------- grids (commands / repos) ---------- */
 .chip-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:.6rem; }
@@ -336,7 +338,6 @@ h1.headline{
     <h1 class="headline">GET CLAUDE CODE ON YOUR LAPTOP</h1>
     <div class="slide-body">
       <ol class="steps">
-        <li><div class="step-text">Install <b>Node.js</b> (v18+) from nodejs.org — a one-time setup.</div></li>
         <li><div class="step-text">Open Terminal — <b>Mac:</b> Spotlight → "Terminal" &nbsp;·&nbsp; <b>Windows:</b> Start menu → "Command Prompt" or "PowerShell".</div></li>
         <li><div class="step-text">Run <code>npm install -g @anthropic-ai/claude-code</code></div></li>
         <li><div class="step-text">Run <code>claude</code> — log in when the browser opens.</div></li>
@@ -390,14 +391,12 @@ h1.headline{
         <li><div class="step-text">Run <code>npm install -g @google/clasp</code></div></li>
         <li><div class="step-text">Run <code>clasp login</code> — log in with your Google Workspace account.</div></li>
         <li><div class="step-text">Turn on the Apps Script API — open <code>script.google.com/home/usersettings</code> and switch it on.</div></li>
-        <li><div class="step-text">Run <code>clasp clone &lt;scriptId&gt;</code> for an existing tool, or <code>clasp create</code> for a new one.</div></li>
       </ol>
       <div class="term">
         <div class="term-bar"><span></span><span></span><span></span><div class="term-title">terminal</div></div>
         <div class="term-body">
           <div class="line prompt" data-text="npm install -g @google/clasp"></div>
           <div class="line prompt" data-text="clasp login"></div>
-          <div class="line prompt" data-text="clasp clone <scriptId>"></div>
         </div>
       </div>
     </div>
@@ -574,13 +573,31 @@ h1.headline{
     });
   }
 
+  function revealLine(el){
+    el.textContent = el.dataset.text;
+    el.style.visibility = 'visible';
+    el.classList.add('fade-in');
+    if (reduced){ el.classList.add('shown'); return Promise.resolve(); }
+    return new Promise(resolve => {
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        el.classList.add('shown');
+        resolve();
+      }));
+    });
+  }
+
   async function playSlide(slide){
     const eyebrow = slide.querySelector('.eyebrow[data-type]');
     if (eyebrow) await typeText(eyebrow, 22);
     const lines = slide.querySelectorAll('.term .line[data-text]');
     for (const line of lines){
-      await typeText(line, 14);
-      await wait(reduced ? 0 : 160);
+      if (line.classList.contains('reply')){
+        await typeText(line, 20);
+        await wait(reduced ? 0 : 280);
+      } else {
+        await revealLine(line);
+        await wait(reduced ? 0 : 140);
+      }
     }
   }
 
