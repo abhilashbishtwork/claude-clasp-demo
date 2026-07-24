@@ -37,21 +37,21 @@ html,body{
   radial-gradient(120% 90% at 90% 100%, #0e1a3a 0%, transparent 55%),
   var(--navy-deep);
 }
-.blob{ position:absolute; width:46vw; height:46vw; border-radius:50%; filter:blur(70px); mix-blend-mode:screen; opacity:.55; will-change:transform; }
-.blob.b1{ background:radial-gradient(circle, var(--violet), transparent 70%); top:-10%; left:-8%; animation: drift1 26s ease-in-out infinite alternate; }
-.blob.b2{ background:radial-gradient(circle, var(--magenta), transparent 70%); bottom:-15%; right:-10%; animation: drift2 32s ease-in-out infinite alternate; }
-.blob.b3{ background:radial-gradient(circle, var(--cyan), transparent 70%); top:20%; right:5%; width:34vw; height:34vw; animation: drift3 22s ease-in-out infinite alternate; }
-.blob.b4{ background:radial-gradient(circle, var(--amber), transparent 70%); bottom:10%; left:15%; width:30vw; height:30vw; animation: drift4 28s ease-in-out infinite alternate; }
-.blob.b5{ background:radial-gradient(circle, var(--mint), transparent 70%); top:45%; left:40%; width:26vw; height:26vw; animation: drift5 24s ease-in-out infinite alternate; }
+.blob{ position:absolute; width:46vw; height:46vw; border-radius:50%; filter:blur(70px); mix-blend-mode:screen; opacity:.62; will-change:transform; }
+.blob.b1{ background:radial-gradient(circle, var(--violet), transparent 70%); top:-10%; left:-8%; animation: drift1 15s ease-in-out infinite alternate; }
+.blob.b2{ background:radial-gradient(circle, var(--magenta), transparent 70%); bottom:-15%; right:-10%; animation: drift2 19s ease-in-out infinite alternate; }
+.blob.b3{ background:radial-gradient(circle, var(--cyan), transparent 70%); top:20%; right:5%; width:34vw; height:34vw; animation: drift3 13s ease-in-out infinite alternate; }
+.blob.b4{ background:radial-gradient(circle, var(--amber), transparent 70%); bottom:10%; left:15%; width:30vw; height:30vw; animation: drift4 17s ease-in-out infinite alternate; }
+.blob.b5{ background:radial-gradient(circle, var(--mint), transparent 70%); top:45%; left:40%; width:26vw; height:26vw; animation: drift5 14s ease-in-out infinite alternate; }
 
-@keyframes drift1{ from{ transform:translate(0,0) scale(1);} to{ transform:translate(12vw,10vh) scale(1.15);} }
-@keyframes drift2{ from{ transform:translate(0,0) scale(1);} to{ transform:translate(-10vw,-12vh) scale(1.1);} }
-@keyframes drift3{ from{ transform:translate(0,0) scale(1);} to{ transform:translate(-8vw,8vh) scale(.9);} }
-@keyframes drift4{ from{ transform:translate(0,0) scale(1);} to{ transform:translate(9vw,-6vh) scale(1.2);} }
-@keyframes drift5{ from{ transform:translate(0,0) scale(1);} to{ transform:translate(-6vw,6vh) scale(1.05);} }
+@keyframes drift1{ from{ transform:translate(0,0) scale(1);} to{ transform:translate(20vw,16vh) scale(1.25);} }
+@keyframes drift2{ from{ transform:translate(0,0) scale(1);} to{ transform:translate(-17vw,-19vh) scale(1.2);} }
+@keyframes drift3{ from{ transform:translate(0,0) scale(1);} to{ transform:translate(-15vw,14vh) scale(.85);} }
+@keyframes drift4{ from{ transform:translate(0,0) scale(1);} to{ transform:translate(16vw,-11vh) scale(1.3);} }
+@keyframes drift5{ from{ transform:translate(0,0) scale(1);} to{ transform:translate(-11vw,11vh) scale(1.1);} }
 
 .motes{ position:absolute; inset:0; overflow:hidden; }
-.mote{ position:absolute; font-family:var(--mono); color:var(--ink); opacity:.09; will-change:transform,opacity; user-select:none; }
+.mote{ position:absolute; border-radius:50%; filter:blur(1.5px); will-change:transform,opacity; }
 
 .grain{ position:absolute; inset:0; opacity:.03; pointer-events:none;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
@@ -102,8 +102,8 @@ h1.headline{
   width:2.2rem; height:2.2rem; border-radius:50%; display:flex; align-items:center; justify-content:center;
   background:color-mix(in srgb, var(--accent-a) 22%, transparent); color:var(--accent-a); border:1px solid color-mix(in srgb, var(--accent-a) 45%, transparent);
 }
-.steps li .step-text{ font-size:clamp(.92rem,1.25vw,1.08rem); color:var(--ink-dim); line-height:1.5; padding-top:.15rem; overflow-wrap:anywhere; }
-.steps code, .points code{ font-family:var(--mono); background:rgba(255,255,255,.08); padding:.1em .45em; border-radius:5px; color:var(--ink); font-size:.92em; overflow-wrap:anywhere; }
+.steps li .step-text{ font-size:clamp(.92rem,1.25vw,1.08rem); color:var(--ink-dim); line-height:1.5; padding-top:.15rem; overflow-wrap:break-word; }
+.steps code, .points code{ font-family:var(--mono); background:rgba(255,255,255,.08); padding:.1em .45em; border-radius:5px; color:var(--ink); font-size:.92em; overflow-wrap:break-word; }
 
 /* ---------- terminal window ---------- */
 .term{
@@ -126,19 +126,14 @@ h1.headline{
 
 /* ---------- grids (commands / repos) ---------- */
 .chip-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:.6rem; }
+.chip-grid.cols-3{ grid-template-columns:repeat(3,1fr); }
+@media (max-width:1150px){ .chip-grid.cols-3{ grid-template-columns:repeat(2,1fr); } }
 .chip{
   background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.08); border-radius:12px;
   padding:.7rem .95rem; display:flex; flex-direction:column; gap:.3rem;
 }
 .chip code{ font-family:var(--mono); color:var(--accent-a); font-size:.92rem; font-weight:600; }
 .chip span{ color:var(--ink-dim); font-size:.82rem; line-height:1.38; }
-
-.new-try{
-  margin-top:.9rem; padding-top:.8rem; border-top:1px solid rgba(255,255,255,.1);
-  font-size:.85rem; color:var(--ink-dimmer); line-height:1.7;
-}
-.new-try b{ color:var(--ink-dim); font-weight:600; }
-.new-try code{ font-family:var(--mono); background:rgba(255,255,255,.08); padding:.1em .45em; border-radius:5px; color:var(--amber); font-size:.92em; }
 
 .repo-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; }
 .repo-card{
@@ -169,15 +164,12 @@ h1.headline{
 .slide.title{ align-items:flex-start; justify-content:center; }
 .title-mega{
   font-family:var(--display); font-weight:800; letter-spacing:-.03em; line-height:.92;
-  font-size:clamp(2.6rem, 8vw, 6.4rem); margin:.3rem 0 1.3rem;
+  font-size:clamp(3rem, 10vw, 8.2rem); margin:.3rem 0 1.3rem;
   background:linear-gradient(110deg, var(--cyan), var(--violet) 45%, var(--magenta) 75%, var(--amber));
   -webkit-background-clip:text; background-clip:text; color:transparent;
   background-size:200% 100%; animation:hue 10s ease-in-out infinite alternate;
 }
 @keyframes hue{ from{ background-position:0% 50%;} to{ background-position:100% 50%; } }
-.title-sub{ font-size:clamp(1rem,1.7vw,1.3rem); color:var(--ink-dim); max-width:50ch; margin-bottom:2.2rem; }
-.title-meta{ display:flex; gap:1rem; flex-wrap:wrap; font-family:var(--mono); font-size:.85rem; color:var(--ink-dimmer); }
-.title-meta span{ border:1px solid rgba(255,255,255,.14); border-radius:999px; padding:.35em .9em; }
 .title-hint{ position:absolute; bottom:12vh; left:7vw; font-family:var(--mono); font-size:.85rem; color:var(--ink-dimmer); animation:pulse 2.4s ease-in-out infinite; }
 @keyframes pulse{ 0%,100%{ opacity:.4;} 50%{ opacity:1;} }
 
@@ -195,7 +187,6 @@ h1.headline{
   backdrop-filter:blur(6px); font-family:var(--mono); font-size:.8rem; color:var(--ink-dimmer);
 }
 .navbar .prompt-line{ white-space:nowrap; }
-.navbar .prompt-line b{ color:var(--ink-dim); font-weight:600; }
 .dots{ display:flex; gap:.5rem; }
 .dot{ width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,.18); border:none; cursor:pointer; padding:0; transition:background .25s, transform .25s; }
 .dot:hover{ transform:scale(1.3); }
@@ -221,20 +212,17 @@ h1.headline{
 .slide.active .points li:nth-child(1),.slide.active .steps li:nth-child(1),.slide.active .chip:nth-child(1),.slide.active .repo-card:nth-child(1){ animation-delay:.05s; }
 .slide.active .points li:nth-child(2),.slide.active .steps li:nth-child(2),.slide.active .chip:nth-child(2),.slide.active .repo-card:nth-child(2){ animation-delay:.12s; }
 .slide.active .points li:nth-child(3),.slide.active .steps li:nth-child(3),.slide.active .chip:nth-child(3),.slide.active .repo-card:nth-child(3){ animation-delay:.19s; }
-.slide.active .steps li:nth-child(4),.slide.active .chip:nth-child(4),.slide.active .repo-card:nth-child(4){ animation-delay:.26s; }
+.slide.active .points li:nth-child(4),.slide.active .steps li:nth-child(4),.slide.active .chip:nth-child(4),.slide.active .repo-card:nth-child(4){ animation-delay:.26s; }
 .slide.active .steps li:nth-child(5),.slide.active .chip:nth-child(5),.slide.active .repo-card:nth-child(5){ animation-delay:.33s; }
 .slide.active .steps li:nth-child(6),.slide.active .chip:nth-child(6),.slide.active .repo-card:nth-child(6){ animation-delay:.4s; }
 .slide.active .chip:nth-child(7){ animation-delay:.47s; }
 .slide.active .chip:nth-child(8){ animation-delay:.54s; }
+.slide.active .chip:nth-child(9){ animation-delay:.61s; }
 
 .chip, .repo-card{ transition:transform .25s ease, border-color .25s ease, background .25s ease; }
 .chip:hover, .repo-card:hover{ transform:translateY(-3px); border-color:color-mix(in srgb, var(--accent-a) 55%, transparent); background:rgba(255,255,255,.07); }
 
 .chip{ position:relative; }
-.chip .tag-new{
-  position:absolute; top:.7rem; right:.75rem; font-size:.6rem; font-family:var(--mono); letter-spacing:.06em;
-  color:var(--amber); border:1px solid color-mix(in srgb, var(--amber) 55%, transparent); border-radius:5px; padding:.12em .42em;
-}
 
 /* ---------- fullscreen control ---------- */
 .fs-btn{
@@ -247,7 +235,7 @@ h1.headline{
 @media (max-width:860px){
   .slide-body{ grid-template-columns:1fr; }
   .repo-grid{ grid-template-columns:1fr 1fr; }
-  .chip-grid{ grid-template-columns:1fr; }
+  .chip-grid, .chip-grid.cols-3{ grid-template-columns:1fr; }
   .arrow{ width:36px; height:36px; }
 }
 @media (max-width:760px){
@@ -262,9 +250,6 @@ h1.headline{
   .navbar{ flex-direction:column; gap:.4rem; height:auto; padding:.7rem 1.2rem calc(.7rem + env(safe-area-inset-bottom)); }
   .navbar .prompt-line{ font-size:.72rem; }
   .dots{ gap:.4rem; }
-}
-@media (max-width:400px){
-  .navbar .prompt-line b{ display:none; }
 }
 @media (prefers-reduced-motion:reduce){
   .blob, .title-mega, .title-hint, .mote{ animation:none !important; }
@@ -290,12 +275,6 @@ h1.headline{
   <section class="slide title" data-accent-a="var(--cyan)" data-accent-b="var(--violet)">
     <div class="eyebrow" data-type="session start --curefoods"></div>
     <div class="title-mega">CLAUDE CODE<br>× CLASP</div>
-    <p class="title-sub">How Curefoods builds its internal tools now — explained in plain English, with a real terminal on screen.</p>
-    <div class="title-meta">
-      <span>Abhilash Bisht · Growth</span>
-      <span>24 July 2026</span>
-      <span>9 slides</span>
-    </div>
     <button class="fs-btn" id="fsBtn" type="button">⛶ Full screen</button>
     <div class="title-hint">→ press the arrow key to begin</div>
   </section>
@@ -306,19 +285,21 @@ h1.headline{
     <h1 class="headline">WHAT IS CLAUDE CODE?</h1>
     <div class="slide-body">
       <ul class="points">
-        <li>An AI that writes and edits real code — inside your actual project, on your actual laptop. Not a chat window that gives you text to copy.</li>
-        <li>You talk to it in plain English. It reads your files, makes the change, and shows you exactly what it changed before anything ships.</li>
-        <li>It runs in a terminal — the same plain window every engineer already uses. There's no new app to learn, just a place to type.</li>
+        <li>An AI that writes and edits on your cmd/terminal window — inside your actual project, on your actual laptop (no cloud, no upload required).</li>
+        <li>Not a chat window that gives you text to copy — you write on the go: create a PPT, a PDF, an Excel, or edit one that already exists.</li>
+        <li>There's no new app to use — just a place to type. Use multiple windows for different projects at once.</li>
+        <li>Low on token consumption.</li>
       </ul>
       <div class="term">
         <div class="term-bar"><span></span><span></span><span></span><div class="term-title">claude — 80×24</div></div>
         <div class="term-body">
           <div class="line prompt" data-text="claude"></div>
-          <div class="line reply" data-text="fix the sorting bug in the daily report"></div>
-          <div class="line out" data-text="Reading build_data.py..."></div>
-          <div class="line out" data-text="Found it — orders were sorted as text,"></div>
-          <div class="line out" data-text="not numbers. Fixing now."></div>
-          <div class="line ok" data-text="✓ build_data.py updated"></div>
+          <div class="line reply" data-text="check the reports in my downloads folder for today and share a summary"></div>
+          <div class="line out" data-text="Reading ~/Downloads..."></div>
+          <div class="line out" data-text="Found 3 reports from today — sales, store audit, SKU tracker."></div>
+          <div class="line out" data-text="Reading sales_report.csv, store_audit.pdf, sku_tracker.xlsx..."></div>
+          <div class="line ok" data-text="✓ Summary ready: revenue up 4% vs yesterday, 2 stores"></div>
+          <div class="line ok" data-text="  flagged low stock, ghee rice sales steady."></div>
         </div>
       </div>
     </div>
@@ -330,20 +311,20 @@ h1.headline{
     <h1 class="headline">WHAT IS CLASP?</h1>
     <div class="slide-body">
       <ul class="points">
-        <li><code>clasp</code> = Command Line Apps Script Projects. It's Google's own tool for editing a Google Apps Script from your laptop, instead of the small browser code editor.</li>
-        <li>Every Curefoods tool built on top of Sheets — reimbursements, store audits, SKU trackers — is an Apps Script project underneath.</li>
-        <li><code>clasp</code> pulls that project onto your laptop as normal files, and pushes your changes straight back to the live script.</li>
+        <li>CLASP stands for Command Line Apps Script Projects.</li>
+        <li>Launched in January 2018 — but it's picked up strongly with Claude Code usage.</li>
+        <li>You can get code changes onto your Apps Scripts without doing it manually — clasp does it for you.</li>
       </ul>
       <div class="term">
         <div class="term-bar"><span></span><span></span><span></span><div class="term-title">clasp</div></div>
         <div class="term-body">
-          <div class="line prompt" data-text="clasp clone 1a2b3c4d..."></div>
-          <div class="line out" data-text="Cloned 4 files."></div>
-          <div class="line out" data-text=" "></div>
+          <div class="line prompt" data-text="claude"></div>
+          <div class="line reply" data-text="create this page and make changes using clasp"></div>
+          <div class="line out" data-text="Reading Code.gs and index.html..."></div>
+          <div class="line out" data-text="Adding the new page and wiring it up..."></div>
+          <div class="line ok" data-text="✓ Page added — index.html, Code.gs updated"></div>
           <div class="line prompt" data-text="clasp push"></div>
-          <div class="line out" data-text="└─ Code.gs"></div>
-          <div class="line out" data-text="└─ index.html"></div>
-          <div class="line ok" data-text="Pushed 2 files."></div>
+          <div class="line ok" data-text="Pushed 2 files. Live."></div>
         </div>
       </div>
     </div>
@@ -356,22 +337,16 @@ h1.headline{
     <div class="slide-body">
       <ol class="steps">
         <li><div class="step-text">Install <b>Node.js</b> (v18+) from nodejs.org — a one-time setup.</div></li>
-        <li><div class="step-text">Open <b>Terminal</b> (on Mac: Spotlight → type "Terminal").</div></li>
+        <li><div class="step-text">Open Terminal — <b>Mac:</b> Spotlight → "Terminal" &nbsp;·&nbsp; <b>Windows:</b> Start menu → "Command Prompt" or "PowerShell".</div></li>
         <li><div class="step-text">Run <code>npm install -g @anthropic-ai/claude-code</code></div></li>
-        <li><div class="step-text"><code>cd</code> into any project folder you want it to work on.</div></li>
-        <li><div class="step-text">Run <code>claude</code> — a browser tab opens once, to log in with your Anthropic / Claude account.</div></li>
+        <li><div class="step-text">Run <code>claude</code> — log in when the browser opens.</div></li>
         <li><div class="step-text">You're in. Type what you want, in plain English.</div></li>
       </ol>
       <div class="term">
         <div class="term-bar"><span></span><span></span><span></span><div class="term-title">terminal</div></div>
         <div class="term-body">
           <div class="line prompt" data-text="npm install -g @anthropic-ai/claude-code"></div>
-          <div class="line out" data-text="added 1 package in 3s"></div>
-          <div class="line out" data-text=" "></div>
-          <div class="line prompt" data-text="cd ~/growth-reports"></div>
           <div class="line prompt" data-text="claude"></div>
-          <div class="line out" data-text="Logged in as abhilash@curefoods.in"></div>
-          <div class="line ok" data-text="Welcome to Claude Code. What are we building?"></div>
         </div>
       </div>
     </div>
@@ -379,33 +354,28 @@ h1.headline{
 
   <!-- 5 : COMMANDS -->
   <section class="slide" data-accent-a="var(--amber)" data-accent-b="var(--magenta)">
-    <div class="eyebrow" data-type="usage --last-60-days"></div>
-    <h1 class="headline">COMMANDS YOU ALREADY REACH FOR</h1>
-    <p class="kicker">Pulled from two months of actually building the tools in this deck — mostly what you already reach for, plus two worth adding.</p>
-    <div class="slide-body">
-      <div>
-        <div class="chip-grid">
-          <div class="chip"><code>claude</code><span>Opens a session in whatever folder you're in — the one you type every single time.</span></div>
-          <div class="chip"><code>clasp push</code><span>Ships a fix straight to the live Sheet or script — used on every tool you've shipped.</span></div>
-          <div class="chip"><code>clasp pull</code><span>Pulls the live script back down first, so you're never editing a stale copy.</span></div>
-          <div class="chip"><code>@filename</code><span>Points Claude at the one file that actually has the bug — Code.gs, build_data.py, whichever.</span></div>
-          <div class="chip"><code>git push</code><span>Sends the finished change to GitHub — same as this deck just did.</span></div>
-          <div class="chip"><code>gh repo create</code><span>Spins up a new GitHub repo and a live link, without leaving the terminal.</span></div>
-        </div>
-        <div class="new-try"><b>Worth trying next:</b> <code>/init</code> writes a memory file so a project remembers itself &nbsp;·&nbsp; <code>esc esc</code> rewinds to an earlier message and tries again</div>
+    <div class="eyebrow" data-type="usage --today"></div>
+    <h1 class="headline">COMMANDS YOU'LL SEE ME USE TODAY</h1>
+    <p class="kicker">The ones I actually reach for, every day.</p>
+    <div class="slide-body single">
+      <div class="chip-grid cols-3">
+        <div class="chip"><code>claude</code><span>Opens a session in whatever folder you're in.</span></div>
+        <div class="chip"><code>claude --resume</code><span>Jumps back into your last session, right where you left off.</span></div>
+        <div class="chip"><code>/clear</code><span>Wipes the conversation, keeps the session open.</span></div>
+        <div class="chip"><code>/resume</code><span>Lets you switch between earlier sessions.</span></div>
+        <div class="chip"><code>/rename</code><span>Renames the current session so you can find it later.</span></div>
+        <div class="chip"><code>/model</code><span>Changes which Claude model you're talking to.</span></div>
+        <div class="chip"><code>/usage</code><span>Shows how much you've used today.</span></div>
+        <div class="chip"><code>shift+tab</code><span>Cycles how much it asks permission before editing files.</span></div>
+        <div class="chip"><code>think → ultrathink</code><span>Tells Claude how deeply to reason before answering.</span></div>
       </div>
-      <div class="term">
+      <div class="term" style="margin-top:1.2rem; max-width:640px;">
         <div class="term-bar"><span></span><span></span><span></span><div class="term-title">growth-reports</div></div>
-        <div class="term-body">
-          <div class="line prompt" data-text="clasp pull"></div>
-          <div class="line ok" data-text="Pulled 3 files."></div>
-          <div class="line prompt" data-text="claude"></div>
-          <div class="line reply" data-text="the ghee rice count looks off in @build_data.py"></div>
-          <div class="line out" data-text="Reading build_data.py..."></div>
-          <div class="line out" data-text="Found it — one SKU listed twice. Fixing."></div>
-          <div class="line ok" data-text="✓ build_data.py updated"></div>
-          <div class="line prompt" data-text="clasp push"></div>
-          <div class="line ok" data-text="Pushed 2 files."></div>
+        <div class="term-body" style="min-height:auto;">
+          <div class="line prompt" data-text="claude --resume"></div>
+          <div class="line out" data-text="Resuming &quot;SKU tracker fixes&quot;..."></div>
+          <div class="line reply" data-text="/usage"></div>
+          <div class="line ok" data-text="42% of today's usage — plenty left."></div>
         </div>
       </div>
     </div>
@@ -417,21 +387,17 @@ h1.headline{
     <h1 class="headline">GET CLASP ON YOUR LAPTOP</h1>
     <div class="slide-body">
       <ol class="steps">
-        <li><div class="step-text">Already did the Claude Code install above? You already have Node.js — skip to the next step.</div></li>
         <li><div class="step-text">Run <code>npm install -g @google/clasp</code></div></li>
-        <li><div class="step-text">Run <code>clasp login</code> — a browser opens, log in with your Google Workspace account.</div></li>
-        <li><div class="step-text">Turn on the Apps Script API once, at <code>script.google.com/home/usersettings</code>.</div></li>
-        <li><div class="step-text">Run <code>clasp clone &lt;scriptId&gt;</code> to pull down an existing tool, or <code>clasp create</code> to start a new one.</div></li>
+        <li><div class="step-text">Run <code>clasp login</code> — log in with your Google Workspace account.</div></li>
+        <li><div class="step-text">Turn on the Apps Script API — open <code>script.google.com/home/usersettings</code> and switch it on.</div></li>
+        <li><div class="step-text">Run <code>clasp clone &lt;scriptId&gt;</code> for an existing tool, or <code>clasp create</code> for a new one.</div></li>
       </ol>
       <div class="term">
         <div class="term-bar"><span></span><span></span><span></span><div class="term-title">terminal</div></div>
         <div class="term-body">
           <div class="line prompt" data-text="npm install -g @google/clasp"></div>
-          <div class="line out" data-text="added 1 package in 2s"></div>
-          <div class="line out" data-text=" "></div>
           <div class="line prompt" data-text="clasp login"></div>
-          <div class="line out" data-text="Logging in globally..."></div>
-          <div class="line ok" data-text="Logged in as abhilash@curefoods.in"></div>
+          <div class="line prompt" data-text="clasp clone <scriptId>"></div>
         </div>
       </div>
     </div>
@@ -444,10 +410,10 @@ h1.headline{
     <div class="slide-body">
       <div>
         <ol class="steps">
-          <li><div class="step-text"><code>clasp clone</code> pulls a live Sheet/Apps Script tool onto your laptop as real, editable files.</div></li>
-          <li><div class="step-text">Claude Code opens that folder — now it can read the <i>whole</i> project, not one function at a time in a tiny box.</div></li>
-          <li><div class="step-text">You describe the fix or feature in plain English. Claude writes it and shows you the diff.</div></li>
-          <li><div class="step-text"><code>clasp push</code> sends it straight back to the live tool. No copy-pasting into the browser editor.</div></li>
+          <li><div class="step-text">Your live Google Sheet tool gets pulled onto your laptop as real files.</div></li>
+          <li><div class="step-text">Claude Code opens the whole project — not just one small box in a browser.</div></li>
+          <li><div class="step-text">You describe what to fix or add, in plain English. Claude makes the change and shows you exactly what it did.</div></li>
+          <li><div class="step-text">One command sends everything straight back to the live tool — no copying, no pasting.</div></li>
         </ol>
         <div class="callout">This is exactly how the Reimbursement Portal, Store Audit App, and the SKU trackers got built.</div>
       </div>
@@ -471,7 +437,7 @@ h1.headline{
   <section class="slide" data-accent-a="var(--cyan)" data-accent-b="var(--amber)">
     <div class="eyebrow" data-type="git log --curefoods"></div>
     <h1 class="headline">AND GITHUB, IN ONE LINE</h1>
-    <p class="kicker">GitHub is where code lives, keeps its history, and gets shared. This deck itself is a webpage hosted there, for free, at a link you can send anyone — built the same way as everything below.</p>
+    <p class="kicker">GitHub backs up your code as you work — nothing's ever lost. It can also host and share things like this deck at a link, instead of emailing HTML files around, standing up app hosting, or relying on Claude Artifacts. A genuinely useful habit for a team like Curefoods.</p>
     <div class="slide-body single">
       <div class="repo-grid">
 
@@ -555,8 +521,7 @@ h1.headline{
   <section class="slide closer" data-accent-a="var(--violet)" data-accent-b="var(--cyan)">
     <div class="eyebrow" data-type="open terminal --live" style="align-self:center"></div>
     <h1 class="headline" style="background:linear-gradient(100deg,var(--cyan),var(--violet) 40%,var(--magenta) 70%,var(--amber)); -webkit-background-clip:text; background-clip:text; color:transparent;">LET'S SEE IT LIVE</h1>
-    <p class="kicker" style="max-width:56ch; margin-left:auto; margin-right:auto; text-align:center;">Everything on the last eight slides, happening in real time, on my laptop, right now.</p>
-    <div class="closer-link">this deck → <a href="https://github.com/abhilashbishtwork/claude-clasp-demo" target="_blank" rel="noopener">github.com/abhilashbishtwork/claude-clasp-demo</a></div>
+    <div class="closer-link" style="margin-top:1.4rem;">this deck → <a href="https://github.com/abhilashbishtwork/claude-clasp-demo" target="_blank" rel="noopener">github.com/abhilashbishtwork/claude-clasp-demo</a></div>
   </section>
 
 </div>
@@ -565,7 +530,7 @@ h1.headline{
 <button class="arrow right" id="nextBtn" aria-label="Next slide">›</button>
 
 <div class="navbar">
-  <div class="prompt-line"><b>abhilash@curefoods</b>:~$ slide <span id="slideNum">1</span>/<span id="slideTotal">9</span><span class="caret solid"></span></div>
+  <div class="prompt-line">$ slide <span id="slideNum">1</span>/<span id="slideTotal">9</span><span class="caret solid"></span></div>
   <div class="dots" id="dots" role="tablist" aria-label="Slide navigation"></div>
 </div>
 
@@ -686,26 +651,30 @@ h1.headline{
     }
   });
 
-  // code motes — fewer on touch/small screens for performance
+  // floating orbs — fewer on touch/small screens for performance
   if (!reduced){
     const isCoarse = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 760;
-    const moteCount = isCoarse ? 10 : 22;
-    const glyphs = ['{ }','=>','$','01','git','push','clasp','const','//','fn()',';','< />','npm','01 10'];
+    const orbCount = isCoarse ? 12 : 26;
+    const colors = ['var(--cyan)','var(--violet)','var(--magenta)','var(--amber)','var(--mint)'];
     const container = document.getElementById('motes');
-    for (let i = 0; i < moteCount; i++){
+    for (let i = 0; i < orbCount; i++){
       const m = document.createElement('span');
       m.className = 'mote';
-      m.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+      const size = 4 + Math.random() * 10;
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      m.style.width = size + 'px';
+      m.style.height = size + 'px';
+      m.style.background = color;
+      m.style.opacity = (0.25 + Math.random() * 0.35).toFixed(2);
       m.style.left = (Math.random() * 100) + 'vw';
       m.style.top = (Math.random() * 100) + 'vh';
-      m.style.fontSize = (0.7 + Math.random() * 1.2) + 'rem';
-      const dur = 18 + Math.random() * 22;
-      const delay = Math.random() * 20;
-      m.style.animation = `moteFloat ${dur}s ease-in-out ${delay}s infinite`;
+      const dur = 10 + Math.random() * 14;
+      const delay = Math.random() * 14;
+      m.style.animation = `moteFloat ${dur}s ease-in-out ${delay}s infinite alternate`;
       container.appendChild(m);
     }
     const styleTag = document.createElement('style');
-    styleTag.textContent = `@keyframes moteFloat{ 0%{ transform:translateY(0);} 50%{ transform:translateY(-6vh) translateX(1.5vw);} 100%{ transform:translateY(0);} }`;
+    styleTag.textContent = `@keyframes moteFloat{ 0%{ transform:translate(0,0);} 50%{ transform:translate(2.5vw,-11vh);} 100%{ transform:translate(-2.5vw,-20vh);} }`;
     document.head.appendChild(styleTag);
   }
 
