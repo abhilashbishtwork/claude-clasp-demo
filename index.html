@@ -137,7 +137,7 @@ h1.headline{
 .chip code{ font-family:var(--mono); color:var(--accent-a); font-size:.92rem; font-weight:600; }
 .chip span{ color:var(--ink-dim); font-size:.82rem; line-height:1.38; }
 
-.repo-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:1rem; max-width:900px; }
+.repo-grid{ display:grid; grid-template-columns:1fr; gap:1rem; max-width:520px; margin:0 auto; }
 .repo-card{
   background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.08); border-radius:14px;
   overflow:hidden; display:flex; flex-direction:column; gap:.55rem; padding-bottom:1.1rem;
@@ -571,12 +571,22 @@ h1.headline{
 
   // ---- sound engine (synthesized, no audio files) ----
   let audioCtx = null;
+  let masterGain = null;
   let muted = localStorage.getItem('deckMuted') === '1';
   let soundStarted = false;
   function getCtx(){
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === 'suspended') audioCtx.resume();
+    if (!masterGain){ masterGain = audioCtx.createGain(); masterGain.gain.value = 1; masterGain.connect(audioCtx.destination); }
     return audioCtx;
+  }
+  function stopAllSound(ctx){
+    if (!masterGain) return;
+    const t = ctx.currentTime;
+    masterGain.gain.cancelScheduledValues(t);
+    masterGain.gain.setValueAtTime(masterGain.gain.value, t);
+    masterGain.gain.linearRampToValueAtTime(0.0001, t + 0.03);
+    masterGain.gain.linearRampToValueAtTime(1, t + 0.07);
   }
   function tone(ctx, freq, start, dur, type, peak){
     const osc = ctx.createOscillator();
@@ -586,7 +596,7 @@ h1.headline{
     gain.gain.setValueAtTime(0.0001, start);
     gain.gain.linearRampToValueAtTime(peak, start + 0.02);
     gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
-    osc.connect(gain).connect(ctx.destination);
+    osc.connect(gain).connect(masterGain);
     osc.start(start); osc.stop(start + dur + 0.02);
   }
   function sweep(ctx, f0, f1, start, dur, type, peak){
@@ -598,46 +608,56 @@ h1.headline{
     gain.gain.setValueAtTime(0.0001, start);
     gain.gain.linearRampToValueAtTime(peak, start + dur * 0.15);
     gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
-    osc.connect(gain).connect(ctx.destination);
+    osc.connect(gain).connect(masterGain);
     osc.start(start); osc.stop(start + dur + 0.05);
   }
   function playWoof(){
     if (muted || reduced) return;
-    const ctx = getCtx(); const t = ctx.currentTime;
+    const ctx = getCtx(); stopAllSound(ctx); const t = ctx.currentTime + 0.08;
     const osc = ctx.createOscillator(); const gain = ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(150, t);
-    osc.frequency.exponentialRampToValueAtTime(45, t + 0.35);
+    osc.frequency.setValueAtTime(160, t);
+    osc.frequency.exponentialRampToValueAtTime(42, t + 0.4);
     gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.linearRampToValueAtTime(0.35, t + 0.03);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(t); osc.stop(t + 0.42);
-    tone(ctx, 90, t, 0.12, 'square', 0.08);
+    gain.gain.linearRampToValueAtTime(0.4, t + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.48);
+    osc.connect(gain).connect(masterGain);
+    osc.start(t); osc.stop(t + 0.5);
+    tone(ctx, 95, t, 0.14, 'square', 0.1);
   }
   function playFinale(){
     if (muted || reduced) return;
-    const ctx = getCtx(); const t = ctx.currentTime;
+    const ctx = getCtx(); stopAllSound(ctx); const t = ctx.currentTime;
     const notes = [523.25, 659.25, 783.99, 1046.5];
     notes.forEach((f, i) => tone(ctx, f, t + i * 0.13, 0.32, 'triangle', 0.15));
     notes.forEach(f => tone(ctx, f, t + notes.length * 0.13, 1.1, 'sine', 0.07));
   }
-  // one distinct ~2.2-2.6s motif per arriving slide (index 0-7, i.e. slides 1-8). Slide 9 uses playFinale.
+  // one distinct ~2.2-2.8s motif per arriving slide (index 0-7, i.e. slides 1-8) — deliberately varied
+  // in register, waveform and rhythm so no two feel alike. Slide 9 uses playFinale.
   const transitionSounds = [
-    (ctx, t) => { sweep(ctx, 220, 440, t, 2.2, 'sine', 0.11); sweep(ctx, 330, 550, t + 0.2, 2.0, 'triangle', 0.07); },
-    (ctx, t) => { sweep(ctx, 240, 900, t, 2.3, 'sine', 0.13); sweep(ctx, 480, 1300, t + 0.3, 1.8, 'sine', 0.06); },
-    (ctx, t) => { [880, 740, 660, 550].forEach((f, i) => tone(ctx, f, t + i * 0.32, 0.7, 'triangle', 0.12)); },
-    (ctx, t) => { [330, 415, 494, 587, 659].forEach((f, i) => tone(ctx, f, t + i * 0.34, 0.55, 'square', 0.06)); },
-    (ctx, t) => { [180, 180, 360, 360].forEach((f, i) => tone(ctx, f, t + i * 0.4, 0.3, 'sawtooth', 0.09)); sweep(ctx, 300, 760, t + 1.7, 0.8, 'sine', 0.08); },
-    (ctx, t) => { [523, 392, 523, 659, 784].forEach((f, i) => tone(ctx, f, t + i * 0.34, 0.5, 'square', 0.06)); },
-    (ctx, t) => { sweep(ctx, 220, 560, t, 2.4, 'sine', 0.1); sweep(ctx, 900, 540, t, 2.4, 'triangle', 0.08); },
-    (ctx, t) => { [392, 494, 587, 784].forEach((f, i) => tone(ctx, f, t + i * 0.34, 0.9, 'sine', 0.09)); }
+    // slide 1 (rare / Home key) — soft ambient two-tone pad, sustained
+    (ctx, t) => { tone(ctx, 196, t, 2.4, 'sine', 0.08); tone(ctx, 294, t + 0.3, 2.1, 'sine', 0.05); },
+    // slide 2 — bright rising sci-fi power-up sweep, high register
+    (ctx, t) => { sweep(ctx, 240, 1100, t, 2.4, 'sine', 0.14); sweep(ctx, 480, 1600, t + 0.35, 1.9, 'sine', 0.06); },
+    // slide 3 — playful descending marimba plinks, mid-high, staccato triangle
+    (ctx, t) => { [880, 740, 660, 550].forEach((f, i) => tone(ctx, f, t + i * 0.34, 0.55, 'triangle', 0.13)); },
+    // slide 4 — fast robotic ascending beep ladder, square wave, digital
+    (ctx, t) => { [330, 392, 466, 554, 659, 784].forEach((f, i) => tone(ctx, f, t + i * 0.24, 0.2, 'square', 0.07)); },
+    // slide 5 — low punchy bass stabs, sawtooth, syncopated rhythm
+    (ctx, t) => { [90, 90, 180, 90, 180, 220].forEach((f, i) => tone(ctx, f, t + i * 0.3, 0.24, 'sawtooth', 0.14)); },
+    // slide 6 — bright bell chimes with long decay, sine, different melody than slide 3
+    (ctx, t) => { [659, 784, 988, 784].forEach((f, i) => tone(ctx, f, t + i * 0.4, 1.1, 'sine', 0.09)); },
+    // slide 7 — long sustained drone converging (two tones sliding into each other)
+    (ctx, t) => { sweep(ctx, 200, 500, t, 2.6, 'sawtooth', 0.06); sweep(ctx, 1000, 520, t, 2.6, 'triangle', 0.07); },
+    // slide 8 — warm slow major chord arpeggio reveal
+    (ctx, t) => { [392, 494, 587, 784].forEach((f, i) => tone(ctx, f, t + i * 0.36, 1.3, 'sine', 0.09)); }
   ];
   function playTransitionSound(toIndex){
     if (muted || reduced) return;
     soundStarted = true;
+    const ctx = getCtx(); stopAllSound(ctx);
     if (toIndex === total - 1){ playFinale(); return; }
-    const ctx = getCtx(); const t = ctx.currentTime;
+    const t = ctx.currentTime + 0.08;
     (transitionSounds[toIndex] || transitionSounds[0])(ctx, t);
   }
   const soundBtn = document.getElementById('soundBtn');
@@ -702,7 +722,7 @@ h1.headline{
           soundStarted = true;
           playWoof();
           const el = document.documentElement;
-          (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+          setTimeout(() => (el.requestFullscreen || el.webkitRequestFullscreen).call(el), 220);
         } else {
           (document.exitFullscreen || document.webkitExitFullscreen).call(document);
         }
@@ -721,7 +741,7 @@ h1.headline{
       if (!isFs){
         soundStarted = true;
         playWoof();
-        (document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen).call(document.documentElement);
+        setTimeout(() => (document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen).call(document.documentElement), 220);
       }
       else (document.exitFullscreen || document.webkitExitFullscreen).call(document);
     }
