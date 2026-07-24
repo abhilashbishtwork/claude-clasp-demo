@@ -573,9 +573,9 @@ a.repo-card .repo-tag::after{ content:"↗"; }
     if (eyebrow) await typeText(eyebrow, 22);
     const lines = slide.querySelectorAll('.term .line[data-text]');
     for (const line of lines){
-      if (line.classList.contains('reply')){
+      if (line.classList.contains('reply') || line.classList.contains('prompt')){
         await typeText(line, 20);
-        await wait(reduced ? 0 : 280);
+        await wait(reduced ? 0 : 220);
       } else {
         await revealLine(line);
         await wait(reduced ? 0 : 140);
