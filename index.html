@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Claude Code × clasp — a field guide for Curefoods</title>
+<meta name="description" content="How Curefoods builds internal tools now: Claude Code, clasp, and GitHub, explained in nine slides.">
+<style>
+:root{
+  --navy:#0b0b2e;
+  --navy-deep:#060617;
+  --violet:#7c3aed;
+  --magenta:#ec4899;
+  --cyan:#22d3ee;
+  --amber:#fb923c;
+  --mint:#34d399;
+  --ink:#f8fafc;
+  --ink-dim:rgba(248,250,252,.72);
+  --ink-dimmer:rgba(248,250,252,.46);
+  --mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+  --display: -apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  --accent-a: var(--cyan);
+  --accent-b: var(--violet);
+}
+*{box-sizing:border-box;}
+html,body{
+  margin:0; padding:0; height:100%; overflow:hidden;
+  background:var(--navy-deep); color:var(--ink);
+  font-family:var(--display);
+  -webkit-font-smoothing:antialiased;
+}
+::selection{ background:var(--cyan); color:#04121a; }
+
+/* ---------- animated backdrop ---------- */
+.backdrop{ position:fixed; inset:0; z-index:0; overflow:hidden; background:
+  radial-gradient(120% 90% at 10% 0%, #101043 0%, transparent 55%),
+  radial-gradient(120% 90% at 90% 100%, #0e1a3a 0%, transparent 55%),
+  var(--navy-deep);
+}
+.blob{ position:absolute; width:46vw; height:46vw; border-radius:50%; filter:blur(70px); mix-blend-mode:screen; opacity:.55; will-change:transform; }
+.blob.b1{ background:radial-gradient(circle, var(--violet), transparent 70%); top:-10%; left:-8%; animation: drift1 26s ease-in-out infinite alternate; }
+.blob.b2{ background:radial-gradient(circle, var(--magenta), transparent 70%); bottom:-15%; right:-10%; animation: drift2 32s ease-in-out infinite alternate; }
+.blob.b3{ background:radial-gradient(circle, var(--cyan), transparent 70%); top:20%; right:5%; width:34vw; height:34vw; animation: drift3 22s ease-in-out infinite alternate; }
+.blob.b4{ background:radial-gradient(circle, var(--amber), transparent 70%); bottom:10%; left:15%; width:30vw; height:30vw; animation: drift4 28s ease-in-out infinite alternate; }
+.blob.b5{ background:radial-gradient(circle, var(--mint), transparent 70%); top:45%; left:40%; width:26vw; height:26vw; animation: drift5 24s ease-in-out infinite alternate; }
+
+@keyframes drift1{ from{ transform:translate(0,0) scale(1);} to{ transform:translate(12vw,10vh) scale(1.15);} }
+@keyframes drift2{ from{ transform:translate(0,0) scale(1);} to{ transform:translate(-10vw,-12vh) scale(1.1);} }
+@keyframes drift3{ from{ transform:translate(0,0) scale(1);} to{ transform:translate(-8vw,8vh) scale(.9);} }
+@keyframes drift4{ from{ transform:translate(0,0) scale(1);} to{ transform:translate(9vw,-6vh) scale(1.2);} }
+@keyframes drift5{ from{ transform:translate(0,0) scale(1);} to{ transform:translate(-6vw,6vh) scale(1.05);} }
+
+.motes{ position:absolute; inset:0; overflow:hidden; }
+.mote{ position:absolute; font-family:var(--mono); color:var(--ink); opacity:.09; will-change:transform,opacity; user-select:none; }
+
+.grain{ position:absolute; inset:0; opacity:.03; pointer-events:none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+/* ---------- deck shell ---------- */
+.deck{ position:relative; z-index:1; height:100vh; height:100dvh; width:100vw; }
+.slide{
+  position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center;
+  padding: 6.5vh 7vw 11vh 7vw;
+  opacity:0; pointer-events:none; transform:translateX(4%); filter:blur(6px);
+  transition: opacity .55s ease, transform .55s ease, filter .55s ease;
+}
+.slide.active{ opacity:1; pointer-events:auto; transform:translateX(0); filter:blur(0); }
+.slide.prev{ transform:translateX(-4%); }
+
+.eyebrow{
+  font-family:var(--mono); font-size:clamp(.8rem,1.1vw,1rem); letter-spacing:.02em;
+  color:var(--accent-a); margin:0 0 1.1rem 0; min-height:1.4em;
+}
+.eyebrow::before{ content:"$ "; color:var(--ink-dimmer); }
+.caret{ display:inline-block; width:.55ch; background:var(--accent-a); margin-left:1px; animation:blink 1s steps(1) infinite; }
+.caret.solid{ height:1em; transform:translateY(.15em); }
+@keyframes blink{ 50%{ opacity:0; } }
+
+h1.headline{
+  font-family:var(--display); font-weight:800; letter-spacing:-.02em; line-height:.98;
+  font-size:clamp(2.1rem, 5.4vw, 4.6rem); margin:0 0 1.6rem 0;
+  background:linear-gradient(100deg, var(--ink) 20%, var(--accent-a) 60%, var(--accent-b) 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.kicker{ font-size:clamp(.95rem,1.3vw,1.2rem); color:var(--ink-dim); max-width:46ch; margin:0 0 2.2rem 0; }
+
+.slide-body{ display:grid; grid-template-columns:1.05fr 1fr; gap:clamp(1.5rem,4vw,4rem); align-items:center; flex:1; min-height:0; }
+.slide-body.single{ grid-template-columns:1fr; }
+
+.points{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:1.1rem; }
+.points li{ display:flex; gap:.9rem; font-size:clamp(.95rem,1.35vw,1.15rem); color:var(--ink-dim); line-height:1.5; }
+.points li::before{ content:"›"; color:var(--accent-a); font-weight:800; font-size:1.3em; line-height:1.1; }
+
+.steps{ list-style:none; margin:0; padding:0; counter-reset:step; display:flex; flex-direction:column; gap:1rem; }
+.steps li{ counter-increment:step; display:grid; grid-template-columns:2.4rem 1fr; gap:.9rem; align-items:start; }
+.steps li::before{
+  content:counter(step); font-family:var(--mono); font-weight:700; font-size:1rem;
+  width:2.2rem; height:2.2rem; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  background:color-mix(in srgb, var(--accent-a) 22%, transparent); color:var(--accent-a); border:1px solid color-mix(in srgb, var(--accent-a) 45%, transparent);
+}
+.steps li .step-text{ font-size:clamp(.92rem,1.25vw,1.08rem); color:var(--ink-dim); line-height:1.5; padding-top:.15rem; }
+.steps code, .points code{ font-family:var(--mono); background:rgba(255,255,255,.08); padding:.1em .45em; border-radius:5px; color:var(--ink); font-size:.92em; }
+
+/* ---------- terminal window ---------- */
+.term{
+  background:#07080d; border-radius:14px; border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 30px 80px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.03), 0 0 60px -10px color-mix(in srgb, var(--accent-a) 35%, transparent);
+  overflow:hidden; font-family:var(--mono);
+}
+.term-bar{ display:flex; align-items:center; gap:.4rem; padding:.7rem .9rem; background:#0c0d16; border-bottom:1px solid rgba(255,255,255,.06); }
+.term-bar span{ width:11px; height:11px; border-radius:50%; display:inline-block; }
+.term-bar span:nth-child(1){ background:#ff5f56; }
+.term-bar span:nth-child(2){ background:#ffbd2e; }
+.term-bar span:nth-child(3){ background:#27c93f; }
+.term-title{ margin-left:.6rem; font-size:.72rem; color:#6b7280; }
+.term-body{ padding:1.1rem 1.2rem 1.4rem; font-size:clamp(.78rem,1.05vw,.92rem); line-height:1.75; min-height:11rem; }
+.line{ white-space:pre-wrap; word-break:break-word; color:#cbd5e1; visibility:hidden; }
+.line.out{ color:#8b96a8; }
+.line.ok{ color:var(--mint); }
+.line.prompt::before{ content:"$ "; color:var(--mint); font-weight:700; }
+.line.reply::before{ content:"> "; color:#64748b; }
+
+/* ---------- grids (commands / repos) ---------- */
+.chip-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:.85rem; }
+.chip{
+  background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.08); border-radius:12px;
+  padding:.9rem 1.05rem; display:flex; flex-direction:column; gap:.35rem;
+}
+.chip code{ font-family:var(--mono); color:var(--accent-a); font-size:.95rem; font-weight:600; }
+.chip span{ color:var(--ink-dim); font-size:.85rem; line-height:1.4; }
+
+.repo-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; }
+.repo-card{
+  background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.08); border-radius:14px;
+  padding:1.1rem 1.2rem; display:flex; flex-direction:column; gap:.55rem;
+}
+.repo-name{ font-family:var(--mono); font-size:.95rem; color:var(--ink); display:flex; align-items:center; gap:.5rem; }
+.repo-dot{ width:9px; height:9px; border-radius:50%; flex:none; }
+.repo-desc{ font-size:.85rem; color:var(--ink-dim); line-height:1.5; }
+.repo-tag{ font-size:.68rem; font-family:var(--mono); color:var(--ink-dimmer); border:1px solid rgba(255,255,255,.14); border-radius:6px; padding:.1em .5em; width:fit-content; }
+
+.callout{
+  margin-top:1.6rem; padding:.9rem 1.1rem; border-left:3px solid var(--accent-a);
+  background:color-mix(in srgb, var(--accent-a) 8%, transparent); border-radius:0 10px 10px 0;
+  font-size:.95rem; color:var(--ink-dim); max-width:52ch;
+}
+
+/* ---------- title slide ---------- */
+.slide.title{ align-items:flex-start; justify-content:center; }
+.title-mega{
+  font-family:var(--display); font-weight:800; letter-spacing:-.03em; line-height:.92;
+  font-size:clamp(2.6rem, 8vw, 6.4rem); margin:.3rem 0 1.3rem;
+  background:linear-gradient(110deg, var(--cyan), var(--violet) 45%, var(--magenta) 75%, var(--amber));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  background-size:200% 100%; animation:hue 10s ease-in-out infinite alternate;
+}
+@keyframes hue{ from{ background-position:0% 50%;} to{ background-position:100% 50%; } }
+.title-sub{ font-size:clamp(1rem,1.7vw,1.3rem); color:var(--ink-dim); max-width:50ch; margin-bottom:2.2rem; }
+.title-meta{ display:flex; gap:1rem; flex-wrap:wrap; font-family:var(--mono); font-size:.85rem; color:var(--ink-dimmer); }
+.title-meta span{ border:1px solid rgba(255,255,255,.14); border-radius:999px; padding:.35em .9em; }
+.title-hint{ position:absolute; bottom:12vh; left:7vw; font-family:var(--mono); font-size:.85rem; color:var(--ink-dimmer); animation:pulse 2.4s ease-in-out infinite; }
+@keyframes pulse{ 0%,100%{ opacity:.4;} 50%{ opacity:1;} }
+
+/* ---------- closer ---------- */
+.slide.closer{ align-items:center; text-align:center; justify-content:center; }
+.slide.closer .headline{ font-size:clamp(2.4rem,7vw,5.2rem); }
+.closer-link{ font-family:var(--mono); font-size:.95rem; color:var(--ink-dimmer); margin-top:2rem; }
+.closer-link a{ color:var(--cyan); text-decoration:none; border-bottom:1px dashed rgba(34,211,238,.4); }
+
+/* ---------- chrome / nav ---------- */
+.navbar{
+  position:fixed; left:0; right:0; bottom:0; z-index:5; height:6.5vh; min-height:44px;
+  display:flex; align-items:center; justify-content:space-between; padding:0 2.2rem;
+  background:linear-gradient(0deg, rgba(6,6,23,.9), rgba(6,6,23,.55) 70%, transparent);
+  backdrop-filter:blur(6px); font-family:var(--mono); font-size:.8rem; color:var(--ink-dimmer);
+}
+.navbar .prompt-line{ white-space:nowrap; }
+.navbar .prompt-line b{ color:var(--ink-dim); font-weight:600; }
+.dots{ display:flex; gap:.5rem; }
+.dot{ width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,.18); border:none; cursor:pointer; padding:0; transition:background .25s, transform .25s; }
+.dot:hover{ transform:scale(1.3); }
+.dot.active{ background:var(--cyan); box-shadow:0 0 10px var(--cyan); }
+.dot:focus-visible, .arrow:focus-visible, .dot:focus-visible{ outline:2px solid var(--cyan); outline-offset:3px; }
+
+.arrow{
+  position:fixed; top:50%; transform:translateY(-50%); z-index:5; width:44px; height:44px; border-radius:50%;
+  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); color:var(--ink);
+  display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.1rem; backdrop-filter:blur(6px);
+  transition:background .2s, opacity .2s;
+}
+.arrow:hover{ background:rgba(255,255,255,.14); }
+.arrow.left{ left:1.4rem; } .arrow.right{ right:1.4rem; }
+.arrow[disabled]{ opacity:.25; cursor:default; }
+
+@media (max-width:860px){
+  .slide-body{ grid-template-columns:1fr; }
+  .repo-grid{ grid-template-columns:1fr 1fr; }
+  .chip-grid{ grid-template-columns:1fr; }
+  .arrow{ width:36px; height:36px; }
+}
+@media (prefers-reduced-motion:reduce){
+  .blob, .title-mega, .title-hint, .mote{ animation:none !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="backdrop">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+  <div class="blob b4"></div>
+  <div class="blob b5"></div>
+  <div class="motes" id="motes"></div>
+  <div class="grain"></div>
+</div>
+
+<div class="deck" id="deck">
+
+  <!-- 1 : TITLE -->
+  <section class="slide title" data-accent-a="var(--cyan)" data-accent-b="var(--violet)">
+    <div class="eyebrow" data-type="session start --curefoods"></div>
+    <div class="title-mega">CLAUDE CODE<br>× CLASP</div>
+    <p class="title-sub">How Curefoods builds its internal tools now — explained in plain English, with a real terminal on screen.</p>
+    <div class="title-meta">
+      <span>Abhilash Bisht · Growth</span>
+      <span>24 July 2026</span>
+      <span>9 slides</span>
+    </div>
+    <div class="title-hint">→ press the arrow key to begin</div>
+  </section>
+
+  <!-- 2 : WHAT IS CLAUDE CODE -->
+  <section class="slide" data-accent-a="var(--cyan)" data-accent-b="var(--violet)">
+    <div class="eyebrow" data-type="claude --about"></div>
+    <h1 class="headline">WHAT IS CLAUDE CODE?</h1>
+    <div class="slide-body">
+      <ul class="points">
+        <li>An AI that writes and edits real code — inside your actual project, on your actual laptop. Not a chat window that gives you text to copy.</li>
+        <li>You talk to it in plain English. It reads your files, makes the change, and shows you exactly what it changed before anything ships.</li>
+        <li>It runs in a terminal — the same plain window every engineer already uses. There's no new app to learn, just a place to type.</li>
+      </ul>
+      <div class="term">
+        <div class="term-bar"><span></span><span></span><span></span><div class="term-title">claude — 80×24</div></div>
+        <div class="term-body">
+          <div class="line prompt" data-text="claude"></div>
+          <div class="line reply" data-text="fix the sorting bug in the daily report"></div>
+          <div class="line out" data-text="Reading build_data.py..."></div>
+          <div class="line out" data-text="Found it — orders were sorted as text,"></div>
+          <div class="line out" data-text="not numbers. Fixing now."></div>
+          <div class="line ok" data-text="✓ build_data.py updated"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 : WHAT IS CLASP -->
+  <section class="slide" data-accent-a="var(--mint)" data-accent-b="var(--cyan)">
+    <div class="eyebrow" data-type="clasp --about"></div>
+    <h1 class="headline">WHAT IS CLASP?</h1>
+    <div class="slide-body">
+      <ul class="points">
+        <li><code>clasp</code> = Command Line Apps Script Projects. It's Google's own tool for editing a Google Apps Script from your laptop, instead of the small browser code editor.</li>
+        <li>Every Curefoods tool built on top of Sheets — reimbursements, store audits, SKU trackers — is an Apps Script project underneath.</li>
+        <li><code>clasp</code> pulls that project onto your laptop as normal files, and pushes your changes straight back to the live script.</li>
+      </ul>
+      <div class="term">
+        <div class="term-bar"><span></span><span></span><span></span><div class="term-title">clasp</div></div>
+        <div class="term-body">
+          <div class="line prompt" data-text="clasp clone 1a2b3c4d..."></div>
+          <div class="line out" data-text="Cloned 4 files."></div>
+          <div class="line out" data-text=" "></div>
+          <div class="line prompt" data-text="clasp push"></div>
+          <div class="line out" data-text="└─ Code.gs"></div>
+          <div class="line out" data-text="└─ index.html"></div>
+          <div class="line ok" data-text="Pushed 2 files."></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 : INSTALL CLAUDE CODE -->
+  <section class="slide" data-accent-a="var(--violet)" data-accent-b="var(--magenta)">
+    <div class="eyebrow" data-type="install claude-code"></div>
+    <h1 class="headline">GET CLAUDE CODE ON YOUR LAPTOP</h1>
+    <div class="slide-body">
+      <ol class="steps">
+        <li><div class="step-text">Install <b>Node.js</b> (v18+) from nodejs.org — a one-time setup.</div></li>
+        <li><div class="step-text">Open <b>Terminal</b> (on Mac: Spotlight → type "Terminal").</div></li>
+        <li><div class="step-text">Run <code>npm install -g @anthropic-ai/claude-code</code></div></li>
+        <li><div class="step-text"><code>cd</code> into any project folder you want it to work on.</div></li>
+        <li><div class="step-text">Run <code>claude</code> — a browser tab opens once, to log in with your Anthropic / Claude account.</div></li>
+        <li><div class="step-text">You're in. Type what you want, in plain English.</div></li>
+      </ol>
+      <div class="term">
+        <div class="term-bar"><span></span><span></span><span></span><div class="term-title">terminal</div></div>
+        <div class="term-body">
+          <div class="line prompt" data-text="npm install -g @anthropic-ai/claude-code"></div>
+          <div class="line out" data-text="added 1 package in 3s"></div>
+          <div class="line out" data-text=" "></div>
+          <div class="line prompt" data-text="cd ~/growth-reports"></div>
+          <div class="line prompt" data-text="claude"></div>
+          <div class="line out" data-text="Logged in as abhilash@curefoods.in"></div>
+          <div class="line ok" data-text="Welcome to Claude Code. What are we building?"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 : COMMANDS -->
+  <section class="slide" data-accent-a="var(--amber)" data-accent-b="var(--magenta)">
+    <div class="eyebrow" data-type="claude --help"></div>
+    <h1 class="headline">COMMANDS WORTH KNOWING</h1>
+    <div class="slide-body">
+      <div class="chip-grid">
+        <div class="chip"><code>claude</code><span>Starts a session in whatever folder you're in.</span></div>
+        <div class="chip"><code>/init</code><span>Writes a memory file so it remembers this project next time.</span></div>
+        <div class="chip"><code>/clear</code><span>Wipes the conversation, keeps the session open.</span></div>
+        <div class="chip"><code>esc</code><span>Stops it mid-response, right away.</span></div>
+        <div class="chip"><code>esc esc</code><span>Rewinds to an earlier message and redoes it differently.</span></div>
+        <div class="chip"><code>shift+tab</code><span>Switches how much it asks permission before editing files.</span></div>
+        <div class="chip"><code>/model</code><span>Changes which Claude model you're talking to.</span></div>
+        <div class="chip"><code>@filename</code><span>Points it at one specific file in the conversation.</span></div>
+      </div>
+      <div class="term">
+        <div class="term-bar"><span></span><span></span><span></span><div class="term-title">claude</div></div>
+        <div class="term-body">
+          <div class="line reply" data-text="check @sales_by_store.csv against @targets.csv"></div>
+          <div class="line out" data-text="Reading both files..."></div>
+          <div class="line out" data-text="3 stores are behind target this week:"></div>
+          <div class="line out" data-text="Indiranagar, Whitefield, Koramangala."></div>
+          <div class="line ok" data-text="Want a one-line summary for the group?"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 : INSTALL CLASP -->
+  <section class="slide" data-accent-a="var(--mint)" data-accent-b="var(--amber)">
+    <div class="eyebrow" data-type="install clasp"></div>
+    <h1 class="headline">GET CLASP ON YOUR LAPTOP</h1>
+    <div class="slide-body">
+      <ol class="steps">
+        <li><div class="step-text">Already did the Claude Code install above? You already have Node.js — skip to the next step.</div></li>
+        <li><div class="step-text">Run <code>npm install -g @google/clasp</code></div></li>
+        <li><div class="step-text">Run <code>clasp login</code> — a browser opens, log in with your Google Workspace account.</div></li>
+        <li><div class="step-text">Turn on the Apps Script API once, at <code>script.google.com/home/usersettings</code>.</div></li>
+        <li><div class="step-text">Run <code>clasp clone &lt;scriptId&gt;</code> to pull down an existing tool, or <code>clasp create</code> to start a new one.</div></li>
+      </ol>
+      <div class="term">
+        <div class="term-bar"><span></span><span></span><span></span><div class="term-title">terminal</div></div>
+        <div class="term-body">
+          <div class="line prompt" data-text="npm install -g @google/clasp"></div>
+          <div class="line out" data-text="added 1 package in 2s"></div>
+          <div class="line out" data-text=" "></div>
+          <div class="line prompt" data-text="clasp login"></div>
+          <div class="line out" data-text="Logging in globally..."></div>
+          <div class="line ok" data-text="Logged in as abhilash@curefoods.in"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 : COMBO -->
+  <section class="slide" data-accent-a="var(--magenta)" data-accent-b="var(--cyan)">
+    <div class="eyebrow" data-type="workflow --curefoods"></div>
+    <h1 class="headline">WHY THE TWO TOGETHER</h1>
+    <div class="slide-body">
+      <div>
+        <ol class="steps">
+          <li><div class="step-text"><code>clasp clone</code> pulls a live Sheet/Apps Script tool onto your laptop as real, editable files.</div></li>
+          <li><div class="step-text">Claude Code opens that folder — now it can read the <i>whole</i> project, not one function at a time in a tiny box.</div></li>
+          <li><div class="step-text">You describe the fix or feature in plain English. Claude writes it and shows you the diff.</div></li>
+          <li><div class="step-text"><code>clasp push</code> sends it straight back to the live tool. No copy-pasting into the browser editor.</div></li>
+        </ol>
+        <div class="callout">This is exactly how the Reimbursement Portal, Store Audit App, and the SKU trackers got built.</div>
+      </div>
+      <div class="term">
+        <div class="term-bar"><span></span><span></span><span></span><div class="term-title">growth-reports</div></div>
+        <div class="term-body">
+          <div class="line prompt" data-text="clasp clone 1a2b3c4d..."></div>
+          <div class="line ok" data-text="Cloned 5 files."></div>
+          <div class="line prompt" data-text="claude"></div>
+          <div class="line reply" data-text="add a WhatsApp summary button to this sheet"></div>
+          <div class="line out" data-text="Editing Code.gs and index.html..."></div>
+          <div class="line ok" data-text="✓ Done — review the diff above."></div>
+          <div class="line prompt" data-text="clasp push"></div>
+          <div class="line ok" data-text="Pushed 2 files. Live."></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 : GITHUB BONUS -->
+  <section class="slide" data-accent-a="var(--cyan)" data-accent-b="var(--amber)">
+    <div class="eyebrow" data-type="git log --curefoods"></div>
+    <h1 class="headline">AND GITHUB, IN ONE LINE</h1>
+    <p class="kicker">GitHub is where code lives, keeps its history, and gets shared. This deck itself is a webpage hosted there, for free, at a link you can send anyone — built the same way as everything below.</p>
+    <div class="slide-body single">
+      <div class="repo-grid">
+        <div class="repo-card"><div class="repo-name"><span class="repo-dot" style="background:var(--mint)"></span>store-audit-app</div><div class="repo-desc">Replacing Oditly — photo + checklist audits, live on an Android APK.</div><div class="repo-tag">Public</div></div>
+        <div class="repo-card"><div class="repo-name"><span class="repo-dot" style="background:var(--cyan)"></span>reimbursement-portal</div><div class="repo-desc">Expense claims and approvals, rebuilt from scratch.</div><div class="repo-tag">Public</div></div>
+        <div class="repo-card"><div class="repo-name"><span class="repo-dot" style="background:var(--amber)"></span>sku-trackers</div><div class="repo-desc">Daily WhatsApp reports for Ghee Rice, Kofta, Mandi, Egg SKUs.</div><div class="repo-tag">Public</div></div>
+        <div class="repo-card"><div class="repo-name"><span class="repo-dot" style="background:var(--violet)"></span>listing-management</div><div class="repo-desc">In-house Google listing manager, replacing FamePilot.</div><div class="repo-tag">Public</div></div>
+        <div class="repo-card"><div class="repo-name"><span class="repo-dot" style="background:var(--magenta)"></span>website-rebuild</div><div class="repo-desc">The new Curefoods house-of-brands website.</div><div class="repo-tag">Public</div></div>
+        <div class="repo-card"><div class="repo-name"><span class="repo-dot" style="background:var(--ink)"></span>claude-clasp-demo</div><div class="repo-desc">This deck. Built the same way, in an afternoon.</div><div class="repo-tag">Public</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 : CLOSER -->
+  <section class="slide closer" data-accent-a="var(--violet)" data-accent-b="var(--cyan)">
+    <div class="eyebrow" data-type="open terminal --live" style="align-self:center"></div>
+    <h1 class="headline" style="background:linear-gradient(100deg,var(--cyan),var(--violet) 40%,var(--magenta) 70%,var(--amber)); -webkit-background-clip:text; background-clip:text; color:transparent;">LET'S SEE IT LIVE</h1>
+    <p class="kicker" style="max-width:56ch; margin-left:auto; margin-right:auto; text-align:center;">Everything on the last eight slides, happening in real time, on my laptop, right now.</p>
+    <div class="closer-link">this deck → <a href="https://github.com/abhilashbishtwork/claude-clasp-demo" target="_blank" rel="noopener">github.com/abhilashbishtwork/claude-clasp-demo</a></div>
+  </section>
+
+</div>
+
+<button class="arrow left" id="prevBtn" aria-label="Previous slide">‹</button>
+<button class="arrow right" id="nextBtn" aria-label="Next slide">›</button>
+
+<div class="navbar">
+  <div class="prompt-line"><b>abhilash@curefoods</b>:~$ slide <span id="slideNum">1</span>/<span id="slideTotal">9</span><span class="caret solid"></span></div>
+  <div class="dots" id="dots" role="tablist" aria-label="Slide navigation"></div>
+</div>
+
+<script>
+(function(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  const dotsEl = document.getElementById('dots');
+  const slideNumEl = document.getElementById('slideNum');
+  const slideTotalEl = document.getElementById('slideTotal');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  slideTotalEl.textContent = total;
+
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let current = 0;
+
+  slides.forEach((s, i) => {
+    const dot = document.createElement('button');
+    dot.className = 'dot';
+    dot.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+    dot.addEventListener('click', () => goTo(i));
+    dotsEl.appendChild(dot);
+  });
+  const dots = Array.from(dotsEl.children);
+
+  function wait(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+  function typeText(el, speed){
+    const text = el.dataset.type !== undefined ? el.dataset.type : el.dataset.text;
+    if (text === undefined) return Promise.resolve();
+    el.style.visibility = 'visible';
+    if (reduced){ el.textContent = text; return Promise.resolve(); }
+    el.textContent = '';
+    let i = 0;
+    return new Promise(resolve => {
+      (function step(){
+        if (i <= text.length){ el.textContent = text.slice(0, i); i++; setTimeout(step, speed); }
+        else resolve();
+      })();
+    });
+  }
+
+  async function playSlide(slide){
+    const eyebrow = slide.querySelector('.eyebrow[data-type]');
+    if (eyebrow) await typeText(eyebrow, 22);
+    const lines = slide.querySelectorAll('.term .line[data-text]');
+    for (const line of lines){
+      await typeText(line, 14);
+      await wait(reduced ? 0 : 160);
+    }
+  }
+
+  function goTo(i){
+    i = Math.max(0, Math.min(total - 1, i));
+    slides[current].classList.remove('active');
+    current = i;
+    const s = slides[current];
+    s.style.setProperty('--accent-a', s.dataset.accentA || 'var(--cyan)');
+    s.style.setProperty('--accent-b', s.dataset.accentB || 'var(--violet)');
+    s.classList.add('active');
+    slideNumEl.textContent = current + 1;
+    dots.forEach((d, idx) => d.classList.toggle('active', idx === current));
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === total - 1;
+    playSlide(s);
+  }
+
+  prevBtn.addEventListener('click', () => goTo(current - 1));
+  nextBtn.addEventListener('click', () => goTo(current + 1));
+
+  window.addEventListener('keydown', (e) => {
+    if (['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)){ e.preventDefault(); goTo(current + 1); }
+    else if (['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(e.key)){ e.preventDefault(); goTo(current - 1); }
+    else if (e.key === 'Home'){ e.preventDefault(); goTo(0); }
+    else if (e.key === 'End'){ e.preventDefault(); goTo(total - 1); }
+  });
+
+  let touchX = null;
+  window.addEventListener('touchstart', e => touchX = e.touches[0].clientX, {passive:true});
+  window.addEventListener('touchend', e => {
+    if (touchX === null) return;
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 50) goTo(current + (dx < 0 ? 1 : -1));
+    touchX = null;
+  }, {passive:true});
+
+  // code motes
+  if (!reduced){
+    const glyphs = ['{ }','=>','$','01','git','push','clasp','const','//','fn()',';','< />','npm','01 10'];
+    const container = document.getElementById('motes');
+    for (let i = 0; i < 22; i++){
+      const m = document.createElement('span');
+      m.className = 'mote';
+      m.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+      m.style.left = (Math.random() * 100) + 'vw';
+      m.style.top = (Math.random() * 100) + 'vh';
+      m.style.fontSize = (0.7 + Math.random() * 1.2) + 'rem';
+      const dur = 18 + Math.random() * 22;
+      const delay = Math.random() * 20;
+      m.style.animation = `moteFloat ${dur}s ease-in-out ${delay}s infinite`;
+      container.appendChild(m);
+    }
+    const styleTag = document.createElement('style');
+    styleTag.textContent = `@keyframes moteFloat{ 0%{ transform:translateY(0);} 50%{ transform:translateY(-6vh) translateX(1.5vw);} 100%{ transform:translateY(0);} }`;
+    document.head.appendChild(styleTag);
+  }
+
+  goTo(0);
+})();
+</script>
+</body>
+</html>
