@@ -60,11 +60,14 @@ html,body{
 /* ---------- deck shell ---------- */
 .deck{ position:relative; z-index:1; height:100vh; height:100dvh; width:100vw; }
 .slide{
-  position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center;
-  padding: 6.5vh 7vw 11vh 7vw;
+  position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-start;
+  padding: 6.5vh 7vw 11vh 7vw; overflow-y:auto; -webkit-overflow-scrolling:touch;
   opacity:0; pointer-events:none; transform:translateX(4%); filter:blur(6px);
   transition: opacity .55s ease, transform .55s ease, filter .55s ease;
 }
+.slide::-webkit-scrollbar{ width:6px; }
+.slide::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.15); border-radius:3px; }
+.slide::-webkit-scrollbar-track{ background:transparent; }
 .slide.active{ opacity:1; pointer-events:auto; transform:translateX(0); filter:blur(0); }
 .slide.prev{ transform:translateX(-4%); }
 
@@ -83,7 +86,7 @@ h1.headline{
   background:linear-gradient(100deg, var(--ink) 20%, var(--accent-a) 60%, var(--accent-b) 100%);
   -webkit-background-clip:text; background-clip:text; color:transparent;
 }
-.kicker{ font-size:clamp(.95rem,1.3vw,1.2rem); color:var(--ink-dim); max-width:46ch; margin:0 0 2.2rem 0; }
+.kicker{ font-size:clamp(.95rem,1.3vw,1.2rem); color:var(--ink-dim); max-width:46ch; margin:0 0 1.3rem 0; }
 
 .slide-body{ display:grid; grid-template-columns:1.05fr 1fr; gap:clamp(1.5rem,4vw,4rem); align-items:center; flex:1; min-height:0; }
 .slide-body.single{ grid-template-columns:1fr; }
@@ -99,8 +102,8 @@ h1.headline{
   width:2.2rem; height:2.2rem; border-radius:50%; display:flex; align-items:center; justify-content:center;
   background:color-mix(in srgb, var(--accent-a) 22%, transparent); color:var(--accent-a); border:1px solid color-mix(in srgb, var(--accent-a) 45%, transparent);
 }
-.steps li .step-text{ font-size:clamp(.92rem,1.25vw,1.08rem); color:var(--ink-dim); line-height:1.5; padding-top:.15rem; }
-.steps code, .points code{ font-family:var(--mono); background:rgba(255,255,255,.08); padding:.1em .45em; border-radius:5px; color:var(--ink); font-size:.92em; }
+.steps li .step-text{ font-size:clamp(.92rem,1.25vw,1.08rem); color:var(--ink-dim); line-height:1.5; padding-top:.15rem; overflow-wrap:anywhere; }
+.steps code, .points code{ font-family:var(--mono); background:rgba(255,255,255,.08); padding:.1em .45em; border-radius:5px; color:var(--ink); font-size:.92em; overflow-wrap:anywhere; }
 
 /* ---------- terminal window ---------- */
 .term{
@@ -122,18 +125,34 @@ h1.headline{
 .line.reply::before{ content:"> "; color:#64748b; }
 
 /* ---------- grids (commands / repos) ---------- */
-.chip-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:.85rem; }
+.chip-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:.6rem; }
 .chip{
   background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.08); border-radius:12px;
-  padding:.9rem 1.05rem; display:flex; flex-direction:column; gap:.35rem;
+  padding:.7rem .95rem; display:flex; flex-direction:column; gap:.3rem;
 }
-.chip code{ font-family:var(--mono); color:var(--accent-a); font-size:.95rem; font-weight:600; }
-.chip span{ color:var(--ink-dim); font-size:.85rem; line-height:1.4; }
+.chip code{ font-family:var(--mono); color:var(--accent-a); font-size:.92rem; font-weight:600; }
+.chip span{ color:var(--ink-dim); font-size:.82rem; line-height:1.38; }
+
+.new-try{
+  margin-top:.9rem; padding-top:.8rem; border-top:1px solid rgba(255,255,255,.1);
+  font-size:.85rem; color:var(--ink-dimmer); line-height:1.7;
+}
+.new-try b{ color:var(--ink-dim); font-weight:600; }
+.new-try code{ font-family:var(--mono); background:rgba(255,255,255,.08); padding:.1em .45em; border-radius:5px; color:var(--amber); font-size:.92em; }
 
 .repo-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; }
 .repo-card{
   background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.08); border-radius:14px;
-  padding:1.1rem 1.2rem; display:flex; flex-direction:column; gap:.55rem;
+  overflow:hidden; display:flex; flex-direction:column; gap:.55rem; padding-bottom:1.1rem;
+}
+.repo-card > *:not(.repo-thumb){ padding-left:1.2rem; padding-right:1.2rem; }
+.repo-thumb{ aspect-ratio:16/10; background:#0a0a1a; position:relative; overflow:hidden; }
+.repo-thumb img{ width:100%; height:100%; object-fit:cover; object-position:top; display:block; }
+.repo-thumb.mock{ display:flex; align-items:center; justify-content:center; }
+.repo-thumb.mock svg{ width:46%; height:46%; position:relative; z-index:1; }
+.repo-thumb .mock-caption{
+  position:absolute; bottom:.5rem; right:.6rem; font-family:var(--mono); font-size:.62rem;
+  color:rgba(255,255,255,.35); letter-spacing:.03em; z-index:1;
 }
 .repo-name{ font-family:var(--mono); font-size:.95rem; color:var(--ink); display:flex; align-items:center; gap:.5rem; }
 .repo-dot{ width:9px; height:9px; border-radius:50%; flex:none; }
@@ -193,14 +212,63 @@ h1.headline{
 .arrow.left{ left:1.4rem; } .arrow.right{ right:1.4rem; }
 .arrow[disabled]{ opacity:.25; cursor:default; }
 
+/* ---------- entrance stagger ---------- */
+.slide.active .points li,
+.slide.active .steps li,
+.slide.active .chip,
+.slide.active .repo-card{ animation: riseIn .6s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes riseIn{ from{ opacity:0; transform:translateY(14px);} to{ opacity:1; transform:translateY(0);} }
+.slide.active .points li:nth-child(1),.slide.active .steps li:nth-child(1),.slide.active .chip:nth-child(1),.slide.active .repo-card:nth-child(1){ animation-delay:.05s; }
+.slide.active .points li:nth-child(2),.slide.active .steps li:nth-child(2),.slide.active .chip:nth-child(2),.slide.active .repo-card:nth-child(2){ animation-delay:.12s; }
+.slide.active .points li:nth-child(3),.slide.active .steps li:nth-child(3),.slide.active .chip:nth-child(3),.slide.active .repo-card:nth-child(3){ animation-delay:.19s; }
+.slide.active .steps li:nth-child(4),.slide.active .chip:nth-child(4),.slide.active .repo-card:nth-child(4){ animation-delay:.26s; }
+.slide.active .steps li:nth-child(5),.slide.active .chip:nth-child(5),.slide.active .repo-card:nth-child(5){ animation-delay:.33s; }
+.slide.active .steps li:nth-child(6),.slide.active .chip:nth-child(6),.slide.active .repo-card:nth-child(6){ animation-delay:.4s; }
+.slide.active .chip:nth-child(7){ animation-delay:.47s; }
+.slide.active .chip:nth-child(8){ animation-delay:.54s; }
+
+.chip, .repo-card{ transition:transform .25s ease, border-color .25s ease, background .25s ease; }
+.chip:hover, .repo-card:hover{ transform:translateY(-3px); border-color:color-mix(in srgb, var(--accent-a) 55%, transparent); background:rgba(255,255,255,.07); }
+
+.chip{ position:relative; }
+.chip .tag-new{
+  position:absolute; top:.7rem; right:.75rem; font-size:.6rem; font-family:var(--mono); letter-spacing:.06em;
+  color:var(--amber); border:1px solid color-mix(in srgb, var(--amber) 55%, transparent); border-radius:5px; padding:.12em .42em;
+}
+
+/* ---------- fullscreen control ---------- */
+.fs-btn{
+  font-family:var(--mono); font-size:.85rem; color:var(--ink); background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.2); border-radius:999px; padding:.5em 1.1em; cursor:pointer;
+  display:inline-flex; align-items:center; gap:.5em; margin-top:1.6rem; transition:background .2s, transform .2s;
+}
+.fs-btn:hover{ background:rgba(255,255,255,.16); transform:translateY(-2px); }
+
 @media (max-width:860px){
   .slide-body{ grid-template-columns:1fr; }
   .repo-grid{ grid-template-columns:1fr 1fr; }
   .chip-grid{ grid-template-columns:1fr; }
   .arrow{ width:36px; height:36px; }
 }
+@media (max-width:760px){
+  .slide{ padding:8vh 5.5vw 15vh; }
+  .slide-body{ gap:1.6rem; }
+  .term-body{ min-height:auto; font-size:.78rem; line-height:1.6; padding:1rem; }
+  .repo-grid{ grid-template-columns:1fr; }
+  .blob{ filter:blur(40px); }
+  .title-hint{ bottom:15vh; }
+  .arrow{ width:32px; height:32px; font-size:1rem; }
+  .arrow.left{ left:.6rem; } .arrow.right{ right:.6rem; }
+  .navbar{ flex-direction:column; gap:.4rem; height:auto; padding:.7rem 1.2rem calc(.7rem + env(safe-area-inset-bottom)); }
+  .navbar .prompt-line{ font-size:.72rem; }
+  .dots{ gap:.4rem; }
+}
+@media (max-width:400px){
+  .navbar .prompt-line b{ display:none; }
+}
 @media (prefers-reduced-motion:reduce){
   .blob, .title-mega, .title-hint, .mote{ animation:none !important; }
+  .slide.active .points li, .slide.active .steps li, .slide.active .chip, .slide.active .repo-card{ animation:none !important; }
 }
 </style>
 </head>
@@ -228,6 +296,7 @@ h1.headline{
       <span>24 July 2026</span>
       <span>9 slides</span>
     </div>
+    <button class="fs-btn" id="fsBtn" type="button">⛶ Full screen</button>
     <div class="title-hint">→ press the arrow key to begin</div>
   </section>
 
@@ -310,27 +379,33 @@ h1.headline{
 
   <!-- 5 : COMMANDS -->
   <section class="slide" data-accent-a="var(--amber)" data-accent-b="var(--magenta)">
-    <div class="eyebrow" data-type="claude --help"></div>
-    <h1 class="headline">COMMANDS WORTH KNOWING</h1>
+    <div class="eyebrow" data-type="usage --last-60-days"></div>
+    <h1 class="headline">COMMANDS YOU ALREADY REACH FOR</h1>
+    <p class="kicker">Pulled from two months of actually building the tools in this deck — mostly what you already reach for, plus two worth adding.</p>
     <div class="slide-body">
-      <div class="chip-grid">
-        <div class="chip"><code>claude</code><span>Starts a session in whatever folder you're in.</span></div>
-        <div class="chip"><code>/init</code><span>Writes a memory file so it remembers this project next time.</span></div>
-        <div class="chip"><code>/clear</code><span>Wipes the conversation, keeps the session open.</span></div>
-        <div class="chip"><code>esc</code><span>Stops it mid-response, right away.</span></div>
-        <div class="chip"><code>esc esc</code><span>Rewinds to an earlier message and redoes it differently.</span></div>
-        <div class="chip"><code>shift+tab</code><span>Switches how much it asks permission before editing files.</span></div>
-        <div class="chip"><code>/model</code><span>Changes which Claude model you're talking to.</span></div>
-        <div class="chip"><code>@filename</code><span>Points it at one specific file in the conversation.</span></div>
+      <div>
+        <div class="chip-grid">
+          <div class="chip"><code>claude</code><span>Opens a session in whatever folder you're in — the one you type every single time.</span></div>
+          <div class="chip"><code>clasp push</code><span>Ships a fix straight to the live Sheet or script — used on every tool you've shipped.</span></div>
+          <div class="chip"><code>clasp pull</code><span>Pulls the live script back down first, so you're never editing a stale copy.</span></div>
+          <div class="chip"><code>@filename</code><span>Points Claude at the one file that actually has the bug — Code.gs, build_data.py, whichever.</span></div>
+          <div class="chip"><code>git push</code><span>Sends the finished change to GitHub — same as this deck just did.</span></div>
+          <div class="chip"><code>gh repo create</code><span>Spins up a new GitHub repo and a live link, without leaving the terminal.</span></div>
+        </div>
+        <div class="new-try"><b>Worth trying next:</b> <code>/init</code> writes a memory file so a project remembers itself &nbsp;·&nbsp; <code>esc esc</code> rewinds to an earlier message and tries again</div>
       </div>
       <div class="term">
-        <div class="term-bar"><span></span><span></span><span></span><div class="term-title">claude</div></div>
+        <div class="term-bar"><span></span><span></span><span></span><div class="term-title">growth-reports</div></div>
         <div class="term-body">
-          <div class="line reply" data-text="check @sales_by_store.csv against @targets.csv"></div>
-          <div class="line out" data-text="Reading both files..."></div>
-          <div class="line out" data-text="3 stores are behind target this week:"></div>
-          <div class="line out" data-text="Indiranagar, Whitefield, Koramangala."></div>
-          <div class="line ok" data-text="Want a one-line summary for the group?"></div>
+          <div class="line prompt" data-text="clasp pull"></div>
+          <div class="line ok" data-text="Pulled 3 files."></div>
+          <div class="line prompt" data-text="claude"></div>
+          <div class="line reply" data-text="the ghee rice count looks off in @build_data.py"></div>
+          <div class="line out" data-text="Reading build_data.py..."></div>
+          <div class="line out" data-text="Found it — one SKU listed twice. Fixing."></div>
+          <div class="line ok" data-text="✓ build_data.py updated"></div>
+          <div class="line prompt" data-text="clasp push"></div>
+          <div class="line ok" data-text="Pushed 2 files."></div>
         </div>
       </div>
     </div>
@@ -399,12 +474,79 @@ h1.headline{
     <p class="kicker">GitHub is where code lives, keeps its history, and gets shared. This deck itself is a webpage hosted there, for free, at a link you can send anyone — built the same way as everything below.</p>
     <div class="slide-body single">
       <div class="repo-grid">
-        <div class="repo-card"><div class="repo-name"><span class="repo-dot" style="background:var(--mint)"></span>store-audit-app</div><div class="repo-desc">Replacing Oditly — photo + checklist audits, live on an Android APK.</div><div class="repo-tag">Public</div></div>
-        <div class="repo-card"><div class="repo-name"><span class="repo-dot" style="background:var(--cyan)"></span>reimbursement-portal</div><div class="repo-desc">Expense claims and approvals, rebuilt from scratch.</div><div class="repo-tag">Public</div></div>
-        <div class="repo-card"><div class="repo-name"><span class="repo-dot" style="background:var(--amber)"></span>sku-trackers</div><div class="repo-desc">Daily WhatsApp reports for Ghee Rice, Kofta, Mandi, Egg SKUs.</div><div class="repo-tag">Public</div></div>
-        <div class="repo-card"><div class="repo-name"><span class="repo-dot" style="background:var(--violet)"></span>listing-management</div><div class="repo-desc">In-house Google listing manager, replacing FamePilot.</div><div class="repo-tag">Public</div></div>
-        <div class="repo-card"><div class="repo-name"><span class="repo-dot" style="background:var(--magenta)"></span>website-rebuild</div><div class="repo-desc">The new Curefoods house-of-brands website.</div><div class="repo-tag">Public</div></div>
-        <div class="repo-card"><div class="repo-name"><span class="repo-dot" style="background:var(--ink)"></span>claude-clasp-demo</div><div class="repo-desc">This deck. Built the same way, in an afternoon.</div><div class="repo-tag">Public</div></div>
+
+        <div class="repo-card">
+          <div class="repo-thumb mock" style="background:radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--mint) 25%, transparent), transparent 60%), #0a0a1a;">
+            <svg viewBox="0 0 64 64" fill="none" stroke="var(--mint)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="14" y="8" width="36" height="50" rx="4"/><path d="M24 8v-2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2"/>
+              <path d="M21 24l4 4 8-8"/><line x1="37" y1="22" x2="45" y2="22"/>
+              <path d="M21 38l4 4 8-8"/><line x1="37" y1="36" x2="45" y2="36"/>
+              <circle cx="24" cy="49" r="2"/><line x1="31" y1="49" x2="45" y2="49"/>
+            </svg>
+            <span class="mock-caption">illustrative — not live data</span>
+          </div>
+          <div class="repo-name"><span class="repo-dot" style="background:var(--mint)"></span>store-audit-app</div>
+          <div class="repo-desc">Replacing Oditly — photo + checklist audits, live on an Android APK.</div>
+          <div class="repo-tag">Public</div>
+        </div>
+
+        <div class="repo-card">
+          <div class="repo-thumb mock" style="background:radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--cyan) 25%, transparent), transparent 60%), #0a0a1a;">
+            <svg viewBox="0 0 64 64" fill="none" stroke="var(--cyan)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="12" y="6" width="40" height="52" rx="4"/><line x1="19" y1="18" x2="45" y2="18"/>
+              <text x="19" y="34" font-family="monospace" font-size="13" stroke="none" fill="var(--cyan)">₹</text>
+              <line x1="28" y1="30" x2="45" y2="30"/><line x1="19" y1="40" x2="35" y2="40"/>
+              <rect x="19" y="46" width="16" height="7" rx="3.5"/>
+            </svg>
+            <span class="mock-caption">illustrative — not live data</span>
+          </div>
+          <div class="repo-name"><span class="repo-dot" style="background:var(--cyan)"></span>reimbursement-portal</div>
+          <div class="repo-desc">Expense claims and approvals, rebuilt from scratch.</div>
+          <div class="repo-tag">Public</div>
+        </div>
+
+        <div class="repo-card">
+          <div class="repo-thumb mock" style="background:radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--amber) 25%, transparent), transparent 60%), #0a0a1a;">
+            <svg viewBox="0 0 64 64" fill="none" stroke="var(--amber)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="10" y1="54" x2="56" y2="54"/>
+              <rect x="16" y="36" width="7" height="18"/><rect x="29" y="24" width="7" height="30"/><rect x="42" y="14" width="7" height="40"/>
+              <path d="M46 8h6v6" /><path d="M52 8l-9 9" fill="none"/>
+            </svg>
+            <span class="mock-caption">illustrative — not live data</span>
+          </div>
+          <div class="repo-name"><span class="repo-dot" style="background:var(--amber)"></span>sku-trackers</div>
+          <div class="repo-desc">Daily WhatsApp reports for Ghee Rice, Kofta, Mandi, Egg SKUs.</div>
+          <div class="repo-tag">Public</div>
+        </div>
+
+        <div class="repo-card">
+          <div class="repo-thumb mock" style="background:radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--violet) 25%, transparent), transparent 60%), #0a0a1a;">
+            <svg viewBox="0 0 64 64" fill="none" stroke="var(--violet)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M32 6c-9 0-16 7-16 16 0 12 16 34 16 34s16-22 16-34c0-9-7-16-16-16z"/>
+              <circle cx="32" cy="22" r="6"/>
+              <path d="M27 20l3 3 6-6" stroke-width="1.8"/>
+            </svg>
+            <span class="mock-caption">illustrative — not live data</span>
+          </div>
+          <div class="repo-name"><span class="repo-dot" style="background:var(--violet)"></span>listing-management</div>
+          <div class="repo-desc">In-house Google listing manager, replacing FamePilot.</div>
+          <div class="repo-tag">Public</div>
+        </div>
+
+        <div class="repo-card">
+          <div class="repo-thumb"><img src="assets/website-rebuild.jpg" alt="Curefoods house-of-brands website homepage" loading="lazy"></div>
+          <div class="repo-name"><span class="repo-dot" style="background:var(--magenta)"></span>website-rebuild</div>
+          <div class="repo-desc">The new Curefoods house-of-brands website.</div>
+          <div class="repo-tag">Public · live screenshot</div>
+        </div>
+
+        <div class="repo-card">
+          <div class="repo-thumb"><img src="assets/claude-clasp-demo.jpg" alt="This deck's own title slide" loading="lazy"></div>
+          <div class="repo-name"><span class="repo-dot" style="background:var(--ink)"></span>claude-clasp-demo</div>
+          <div class="repo-desc">This deck. Built the same way, in an afternoon.</div>
+          <div class="repo-tag">Public · live screenshot</div>
+        </div>
+
       </div>
     </div>
   </section>
@@ -502,20 +644,55 @@ h1.headline{
     else if (e.key === 'End'){ e.preventDefault(); goTo(total - 1); }
   });
 
-  let touchX = null;
-  window.addEventListener('touchstart', e => touchX = e.touches[0].clientX, {passive:true});
+  let touchX = null, touchY = null;
+  window.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; touchY = e.touches[0].clientY; }, {passive:true});
   window.addEventListener('touchend', e => {
     if (touchX === null) return;
     const dx = e.changedTouches[0].clientX - touchX;
-    if (Math.abs(dx) > 50) goTo(current + (dx < 0 ? 1 : -1));
-    touchX = null;
+    const dy = e.changedTouches[0].clientY - touchY;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) goTo(current + (dx < 0 ? 1 : -1));
+    touchX = null; touchY = null;
   }, {passive:true});
 
-  // code motes
+  // fullscreen (title slide only)
+  const fsBtn = document.getElementById('fsBtn');
+  const fsSupported = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
+  if (fsBtn){
+    if (!fsSupported){
+      fsBtn.style.display = 'none';
+    } else {
+      fsBtn.addEventListener('click', () => {
+        const isFs = document.fullscreenElement || document.webkitFullscreenElement;
+        if (!isFs){
+          const el = document.documentElement;
+          (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+        } else {
+          (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+        }
+      });
+      const updateFsLabel = () => {
+        const isFs = document.fullscreenElement || document.webkitFullscreenElement;
+        fsBtn.textContent = isFs ? '⤢  Exit full screen' : '⛶  Full screen';
+      };
+      document.addEventListener('fullscreenchange', updateFsLabel);
+      document.addEventListener('webkitfullscreenchange', updateFsLabel);
+    }
+  }
+  window.addEventListener('keydown', e => {
+    if ((e.key === 'f' || e.key === 'F') && fsSupported && !e.metaKey && !e.ctrlKey){
+      const isFs = document.fullscreenElement || document.webkitFullscreenElement;
+      if (!isFs) (document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen).call(document.documentElement);
+      else (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    }
+  });
+
+  // code motes — fewer on touch/small screens for performance
   if (!reduced){
+    const isCoarse = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 760;
+    const moteCount = isCoarse ? 10 : 22;
     const glyphs = ['{ }','=>','$','01','git','push','clasp','const','//','fn()',';','< />','npm','01 10'];
     const container = document.getElementById('motes');
-    for (let i = 0; i < 22; i++){
+    for (let i = 0; i < moteCount; i++){
       const m = document.createElement('span');
       m.className = 'mote';
       m.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
